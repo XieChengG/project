@@ -1,0 +1,85 @@
+services:
+  prometheus:
+    image: bitnami/prometheus:2.39.1
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./conf/prometheus.yml:/opt/bitnami/prometheus/conf/prometheus.yml
+      - ./conf/rules.yml:/opt/bitnami/prometheus/conf/rules.yml
+      - ./data:/opt/bitnami/prometheus/data
+    hostname: prometheus
+    user: root
+    container_name: prometheus
+    environment:
+      - TZ=America/New_York
+    networks:
+      - monitoring
+        
+  grafana:
+    image: grafana/grafana:12.0.1
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    hostname: grafana
+    user: root
+    container_name: grafana
+    environment:
+      - TZ=America/New_York
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    restart: always
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./conf/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    hostname: alertmanager
+    user: root
+    container_name: alertmanager
+    environment:
+      - TZ=America/New_York
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
+
+  prometheus-alert:
+    image: feiyu563/prometheus-alert:latest
+    restart: always
+    ports:
+      - "9094:8080"
+    volumes:
+      - ./db:/app/db
+    user: root
+    container_name: prometheus-alert
+    environment:
+      - PA_LOGIN_USER=admin
+      - PA_LOGIN_PASSWORD=xzkjxzkj123!
+      - PA_TITLE=prometheusAlert
+      - PA_OPEN_FEISHU=1
+      - PA_OPEN_DINGDING=0
+      - PA_OPEN_WEIXIN=1
+    depends_on:
+      - alertmanager
+    networks:
+      - monitoring
+
+networks:
+  monitoring:

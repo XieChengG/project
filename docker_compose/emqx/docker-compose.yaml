@@ -1,0 +1,46 @@
+networks:
+  middleware:
+    external: true
+    name: xiaozhi-project-network
+services:
+  emqx:
+    container_name: emqx
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+    environment:
+      EMQX_HOST: node.emqx.com
+      EMQX_LOADED_PLUGINS: emqx_dashboard, emqx_auth_http,emqx_management
+      EMQX_NAME: emqx
+      TZ: Asia/Shanghai
+    healthcheck:
+      interval: 5s
+      retries: 3
+      test:
+      - CMD
+      - /opt/emqx/bin/emqx_ctl
+      - status
+      timeout: 20s
+    hostname: emqx
+    image: emqx/emqx:5.7.1
+    networks:
+      middleware:
+        aliases:
+        - node.emqx.com
+    ports:
+    - 1883:1883
+    - 18083:8083
+    - 18084:8084
+    - 8883:8883
+    - 28083:18083
+    - 18081:8081
+    restart: always
+    volumes:
+    - /emqx/data:/opt/emqx/data
+    - /emqx/log:/opt/emqx/log
+    - ./ssl/cert.pem:/etc/emqx/certs/cert.pem
+    - ./ssl/key.pem:/etc/emqx/certs/key.pem
+    - ./ssl/ca.pem:/etc/emqx/certs/ca.pem
+    - ./emqx.conf:/opt/emqx/etc/emqx.conf

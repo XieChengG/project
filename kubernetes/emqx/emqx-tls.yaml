@@ -1,0 +1,57 @@
+apiVersion: apps.emqx.io/v2alpha1
+kind: EMQX
+metadata:
+  name: emqx
+  namespace: emqx-ssl
+spec:
+  image: "emqx/emqx:5.8.1"
+  imagePullPolicy: IfNotPresent
+  bootstrapConfig: |
+    listeners.ssl.default: {
+      bind = "0.0.0.0:8883"
+      ssl_options {
+        cacertfile = "/mounted/cert/ca.crt"
+        certfile = "/mounted/cert/tls.crt"
+        keyfile = "/mounted/cert/tls.key"
+      }
+    }
+  coreTemplate:
+    spec:
+      replicas: 1
+      extraVolumes:
+        - name: emqx-tls
+          secret:
+            secretName: emqx-tls
+      extraVolumeMounts:
+        - name: emqx-tls
+          mountPath: /mounted/cert
+  replicantTemplate:
+    spec:
+      replicas: 0
+      extraVolumes:
+        - name: emqx-tls
+          secret:
+            secretName: emqx-tls
+      extraVolumeMounts:
+        - name: emqx-tls
+          mountPath: /mounted/cert
+  dashboardServiceTemplate:
+    spec:
+      type: ClusterIP
+      ports:
+        - name: "dashboard"
+          port: 18083
+          targetPort: 18083
+          protocol: TCP
+  listenersServiceTemplate:
+    spec:
+      type: LoadBalancer
+      ports:
+        - name: "ssl-default"
+          port: 8883
+          targetPort: 8883
+          protocol: TCP
+        - name: "default"
+          port: 1883
+          targetPort: 1883
+          protocol: TCP

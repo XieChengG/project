@@ -1,0 +1,16 @@
+services:
+  dcgm-exporter:
+    image: nvidia/dcgm-exporter:4.4.0-4.5.0-ubuntu22.04
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    restart: always
+    ports:
+      - "10.27.103.111:9400:9400"
+    hostname: dcgm-exporter
+    user: root
+    container_name: dcgm-exporter
+    cap_add:
+      - SYS_ADMIN

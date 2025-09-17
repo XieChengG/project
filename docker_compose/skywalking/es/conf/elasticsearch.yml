@@ -1,0 +1,24 @@
+# 集群名称
+cluster.name: my-dev-cluster
+
+# 节点名称
+node.name: my-single-node
+
+# 网络主机
+network.host: 0.0.0.0
+
+# HTTP 端口
+http.port: 9200
+
+# 节点发现设置 - 单节点集群
+discovery.type: single-node
+
+# 禁用安全功能 (仅限开发环境!)
+xpack.security.enabled: false
+
+# 数据和日志路径
+path.data: /usr/share/elasticsearch/data
+path.logs: /var/log/elasticsearch
+
+# JVM 交换限制
+bootstrap.memory_lock: true

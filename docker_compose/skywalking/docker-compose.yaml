@@ -1,0 +1,71 @@
+services:
+  elasticsearch:
+    image: elasticsearch:8.18.6
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+    restart: always
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - ./es/conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./es/data:/usr/share/elasticsearch/data
+      - ./es/plugins:/usr/share/elasticsearch/plugins
+    hostname: elastic
+    container_name: skywalking-es
+    healthcheck:
+      test: ["CMD-SHELL", "curl -I http://localhost:9200 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    environment:
+      - TZ=Asia/Shanghai
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=xzkjxzkj123!
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+    networks:
+      - skywalking
+
+  skywalking-oap-server:
+    image: apache/skywalking-oap-server:latest
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+    restart: always
+    ports:
+      - "11800:11800"
+      - "12800:12800"
+    hostname: oap-server
+    container_name: skywalking-oap
+    environment:
+      - TZ=Asia/Shanghai
+      - SW_STORAGE=elasticsearch
+      - SW_STORAGE_ES_CLUSTER_NODES=elasticsearch:9200
+      - "JAVA_OPTS=-Xms2g -Xmx2g"
+    depends_on:
+      - elasticsearch
+    networks:
+      - skywalking
+
+  skywalking-ui:
+    image: apache/skywalking-ui:latest
+    restart: always
+    ports:
+      - "28080:8080"
+    hostname: ui
+    container_name: skywalking-ui
+    environment:
+      - TZ=Asia/Shanghai
+      - SW_OAP_ADDRESS=http://skywalking-oap-server:12800
+    depends_on:
+      - skywalking-oap-server
+    networks:
+      - skywalking
+
+networks:
+  skywalking:

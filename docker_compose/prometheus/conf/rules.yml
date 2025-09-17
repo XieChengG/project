@@ -1,0 +1,30 @@
+groups:
+- name: ContainerAlertRules
+  rules:
+  - alert: 容器异常停止
+    expr: (time() - container_last_seen{container_label_io_kubernetes_container_name!="POD", image!=""}) > 3600 OR absent(container_memory_usage_bytes{container_label_io_kubernetes_container_name!="POD", image!=""})
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "{{ $labels.instance }}: Container is stopped!"
+      description: "{{ $labels.instance }}: Container {{ $labels.name }} is stopped (current value is: {{ $value }})"
+
+- name: GPUAlertRules
+  rules:
+  - alert: GPU显存使用率大于80%
+    expr: (DCGM_FI_DEV_FB_USED / 24564) * 100 > 80
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "{{ $labels.instance }}: GPU显存使用率大于80%"
+      description: "{{ $labels.instance }}: GPU {{ $labels.device }} 显存使用率大于80% (当前值: {{ $value }})"
+  - alert: GPU温度大于60C
+    expr: DCGM_FI_DEV_GPU_TEMP > 60
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "{{ $labels.instance }}: GPU温度大于60C"
+      description: "{{ $labels.instance }}: GPU {{ $labels.device }} 温度大于60C (当前值: {{ $value }})"

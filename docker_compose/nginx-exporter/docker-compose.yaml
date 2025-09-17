@@ -1,0 +1,17 @@
+services:
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.2
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+    restart: always
+    ports:
+      - "10.60.16.85:9113:9113"
+    extra_hosts:
+      - "nginx.state.com:10.60.16.85"
+    environment:
+      - SCRAPE_URI=http://nginx.state.com:8080/stub_status
+    hostname: nginx-exporter
+    container_name: nginx-exporter
