@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq-exporter-volc
+  namespace: kubesphere-monitoring-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq-exporter-volc
+  template:
+    metadata:
+      labels:
+        app: rabbitmq-exporter-volc
+    spec:
+      containers:
+        - name: rabbitmq-exporter
+          image: kbudde/rabbitmq-exporter:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 9099
+          env:
+            - name: PUBLISH_PORT
+              value: "9099"
+            - name: RABBIT_CAPABILITIES
+              value: "bert,no_sort"
+            - name: RABBIT_USER
+              value: "admin"
+            - name: RABBIT_PASSWORD
+              value: "xxxxxxxx"
+            - name: RABBIT_URL
+              value: http://14.103.236.163:15672
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 500m
+              memory: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-exporter-volc
+  namespace: kubesphere-monitoring-system
+  labels:
+    app: rabbitmq-exporter
+spec:
+  type: ClusterIP
+  selector:
+    app: rabbitmq-exporter-volc
+  ports:
+    - name: http
+      port: 9099
+      targetPort: 9099
+      protocol: TCP

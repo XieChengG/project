@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rabbitmq-exporter
+  namespace: kubesphere-monitoring-system
+  labels:
+    app: rabbitmq-exporter
+spec:
+  endpoints:
+  - interval: 1m
+    port: http
+    relabelings:
+    - action: replace
+      regex: (.*)
+      replacement: $1
+      sourceLabels: [__meta_kubernetes_endpoints_label_app]
+      targetLabel: app
+    scheme: http
+  namespaceSelector:
+    matchNames:
+    - kubesphere-monitoring-system
+  selector:
+    matchLabels:
+      app: rabbitmq-exporter
