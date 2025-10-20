@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15-alpine
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    container_name: wiki-postgres
+    environment:
+      - POSTGRES_DB=wiki
+      - POSTGRES_PASSWORD=xzkjxzkj123!
+      - POSTGRES_USER=wiki
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d wiki"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - wiki
+
+  wiki:
+    image: ghcr.io/requarks/wiki:2
+    restart: always
+    container_name: wiki
+    ports:
+      - 38080:3000
+    environment:
+      - DB_TYPE=postgres
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=wiki
+      - DB_PASS=xzkjxzkj123!
+      - DB_NAME=wiki
+    depends_on:
+      - db
+    networks:
+      - wiki
+
+networks:
+  wiki:
+
+volumes:
+  db-data:
