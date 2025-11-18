@@ -1,0 +1,53 @@
+# 第一阶段：构建阶段
+FROM ubuntu:24.04 AS builder
+
+WORKDIR /app
+
+COPY ca-certificates_20250419_all.deb /app/
+
+RUN apt-get update && \
+    apt-get install -y openssl
+
+RUN rm -f /etc/apt/sources.list.d/ubuntu.sources
+
+COPY ubuntu.list /etc/apt/sources.list.d/ubuntu.list
+
+RUN dpkg -i /app/ca-certificates_20250419_all.deb && \
+        apt-get update && \
+        apt-get install -f -y
+
+RUN apt-get update && \
+        apt-get install -y --no-install-recommends libopus0 ffmpeg wget curl iputils-ping telnet && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
+
+# 第二阶段：运行阶段
+FROM ubuntu/jre:21-24.04_stable
+
+# 复制第一阶段安装好的软件到第二阶段 
+COPY --from=builder /usr/bin/sh \
+                        /usr/bin/mkdir \
+                        /usr/bin/sleep \
+                        /usr/bin/apt-get \
+                        /usr/bin/wget \
+                        /usr/bin/ping \
+                        /usr/bin/curl \
+                        /usr/bin/telnet \
+                        /usr/bin/ffmpeg /usr/bin/
+
+COPY --from=builder /usr/bin/sh /bin/
+
+COPY --from=builder /usr/lib/x86_64-linux-gnu/* /usr/lib/x86_64-linux-gnu/
+
+WORKDIR /app
+
+RUN mkdir ./logs
+
+# 设置编码
+ENV LANG=C.UTF-8
+ENV PATH=/bin:/usr/bin
+
+# 开放端口
+EXPOSE 8190
+
+ENTRYPOINT ["/bin/sh", "-c", "sleep 3600"]
