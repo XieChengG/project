@@ -1,19 +1,23 @@
 services:
   cadvisor:
-    image: bitnami/cadvisor:0.52.1
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
     deploy:
       resources:
         limits:
-          cpus: '1'
+          cpus: "1"
           memory: 1G
     restart: always
+    privileged: true
+    devices:
+      - /dev/kmsg
     ports:
-      - "10.60.16.85:18080:8080"
+      - "10.27.103.112:18080:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
     hostname: cadvisor
     user: root
     container_name: cadvisor

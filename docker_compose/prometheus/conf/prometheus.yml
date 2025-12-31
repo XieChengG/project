@@ -1,26 +1,99 @@
 global:
-  scrape_interval: 15s
-  external_labels:
-    monitoring: GPU-Server-Monitoring
-  evaluation_interval: 30s
+    scrape_interval: 15s
+    external_labels:
+        monitoring: GPU-Server-Monitoring
+    evaluation_interval: 30s
 
 alerting:
-  alertmanagers:
-    - static_configs:
-      - targets: ["10.27.103.111:9093"]
+    alertmanagers:
+        - static_configs:
+              - targets: ["10.27.103.111:9093"]
 
 rule_files:
-  - "rules.yml"
+    - "rules.yml"
 
 scrape_configs:
-  - job_name: 'cadvisor'
-    scrape_interval: 5s
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['10.27.103.111:18080']
+    - job_name: "cadvisor"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets:
+                - "10.27.103.111:18080"
+                - "10.27.103.112:18080"
+      relabel_configs:
+          - source_labels: [__address__]
+            regex: '([^:]+):\d+'
+            target_label: host_ip
+            replacement: "${1}"
 
-  - job_name: 'nginx-exporter'
-    scrape_interval: 5s
-    metrics_path: /metrics
-    static_configs:
-      - targets: ['10.27.103.111:9113']
+    - job_name: "nginx-exporter"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:9113"]
+
+    - job_name: "dcgm-exporter"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:9400"]
+
+    - job_name: "xorigin-aipi-server"
+      scrape_interval: 5s
+      metrics_path: /actuator/prometheus
+      static_configs:
+          - targets: ["10.27.103.111:8086"]
+
+    - job_name: "xorigin-aipi-metrics"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:11099"]
+
+    - job_name: "xorigin-manager-api"
+      scrape_interval: 5s
+      metrics_path: /actuator/prometheus
+      static_configs:
+          - targets: ["10.27.103.111:8002"]
+
+    - job_name: "xorigin-speech-server-38000"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:38000"]
+
+    - job_name: "xorigin-speech-server-38001"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:38001"]
+
+    - job_name: "xorigin-speech-server-38002"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:38002"]
+
+    - job_name: "index-tts-vllm-37000"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:37000"]
+
+    - job_name: "index-tts-vllm-37001"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:37001"]
+
+    - job_name: "index-tts-vllm-37002"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:37002"]
+
+    - job_name: "index-tts-vllm-37003"
+      scrape_interval: 5s
+      metrics_path: /metrics
+      static_configs:
+          - targets: ["10.27.103.111:37003"]
